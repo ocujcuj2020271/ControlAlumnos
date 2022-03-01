@@ -133,14 +133,13 @@ function agregarEmpleados(req, res) {
         modeloEmpleados.save((err, empleadoGuardado) => {
             if (err) return res.status(400).send({ mensaje: 'Error en la peticion' });
             if (!empleadoGuardado) return res.status(404).send({ mensaje: 'Error al agregar un Empleado' });
-        })
+        });
 
     } else {
-        return res.status(404).send({ mensaje: 'Debe enviar los parametros obligatorios' })
+        return res.status(404).send({ mensaje: 'Debe enviar los parametros obligatorios' });
     }
 }
 
-//----------------------------------------------------------------------------------
 function editarEmpleados(req, res) {
     const parametros = req.body;
     const idEmpleado = req.params.idEmpleado;
@@ -168,12 +167,12 @@ function BuscarEmpleadoId(req, res) {
         if (!empresaEncontrada) {
             return res.status(400).send({ mensaje: "No puedes editar un empleado que no sea de tu Empresa" });
         }
-        Empleados.find({_id: idEmpleado}, (err, empleadoEncontrado) => {
-                if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-                if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
+        Empleados.find({ _id: idEmpleado }, (err, empleadoEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+            if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
 
-                return res.status(200).send({ empleado: empleadoEncontrado })
-            }
+            return res.status(200).send({ empleado: empleadoEncontrado })
+        }
         );
     }
     )
@@ -182,17 +181,100 @@ function BuscarEmpleadoId(req, res) {
 function BuscarEmpleadoNombre(req, res) {
     const Empleado = req.params.nombreEmpleado;
 
-    Empleados.findOne({ nombre : Empleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+    Empleados.findOne({ nombre: Empleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
         if (!empresaEncontrada) {
             return res.status(400).send({ mensaje: 'no puedes ver empleados que no sean tuyos' });
         }
-        Empleados.find({ nombre: Empleado}, (err, empleadoEncontrado) => {
-                if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-                if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
+        Empleados.find({ nombre: Empleado }, (err, empleadoEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+            if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
 
-                return res.status(200).send({ empleado: empleadoEncontrado })
-            }
+            return res.status(200).send({ empleado: empleadoEncontrado })
+        }
         );
+    }
+    )
+
+}
+
+function BuscarEmpleadoPuesto(req, res) {
+    const puestoEmpleado = req.params.puesto;
+
+    Empleados.findOne({ puesto: puestoEmpleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+
+
+        if (!empresaEncontrada) {
+            return res.status(400).send({ mensaje: 'no puedes ver empleados que no sean tuyos' });
+        }
+        Empleados.find({ puesto: puestoEmpleado }, (err, empleadoEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+            if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
+
+            return res.status(200).send({ empleado: empleadoEncontrado })
+        }
+        );
+    }
+    )
+
+}
+
+function BuscarEmpleadoDepartamento(req, res) {
+    const departamentoEmpleado = req.params.departamento;
+
+    Empleados.findOne({ departamento: departamentoEmpleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+
+        if (!empresaEncontrada) {
+            return res.status(400).send({ mensaje: 'no puedes ver empleados que no sean tuyos' });
+        }
+        Empleados.find({ departamento: departamentoEmpleado }, (err, empleadoEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+            if (!empleadoEncontrado) return res.status(500).send({ mensaje: 'Error al buscar empleado' });
+
+            return res.status(200).send({ empleado: empleadoEncontrado })
+        }
+        );
+    }
+    )
+
+}
+
+
+function eliminarEmpleados(req, res) {
+    var idEmpleado = req.params.idEmpleado;
+    
+
+    Empleados.findOne({ _id: idEmpleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+        
+        if (!empresaEncontrada) {
+            return res.status(400).send({ mensaje: 'No puedes eliminar Empleados de otra Empresa' });
+        }
+
+        Empleados.findByIdAndDelete(idEmpleado, (err, empleadoEliminado) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' })
+            if (!empleadoEliminado) return res.status(500).send({ mensaje: 'Error al eliminar  Empleado' });
+
+            return res.status(200).send({ empleado: 'se elimino el empleado', empleadoEliminado })
+        });
+    }
+    )
+}
+
+
+function TodoslosEmpleados(req, res) {
+    
+
+    Empleados.findOne({idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+
+
+        if (!empresaEncontrada) {
+            return res.status(400).send({ mensaje: 'No puedes ver Empleados de otra Empresa' });
+        }
+        Empleados.find({}, (err, empleadosEncontrados) => {
+            if (err) return res.status(500).send({ mensaje: 'Error en la peticion' })
+            if (!empleadosEncontrados) return res.status(500).send({ mensaje: 'Error al obtener usuario' })
+    
+            return res.status(200).send({ Empleados:  empleadosEncontrados })
+        });
     }
     )
 
@@ -210,5 +292,9 @@ module.exports = {
     agregarEmpleados,
     editarEmpleados,
     BuscarEmpleadoId,
-    BuscarEmpleadoNombre
+    BuscarEmpleadoNombre,
+    BuscarEmpleadoPuesto,
+    BuscarEmpleadoDepartamento,
+    eliminarEmpleados, 
+    TodoslosEmpleados
 }

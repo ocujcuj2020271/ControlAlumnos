@@ -19,6 +19,10 @@ api.post('/agregarEmpleados',[md_autenticacion.Auth, md_roles.verEmpresas], cont
 api.put('/editarEmpleados/:idEmpleado',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.editarEmpleados);
 api.get('/buscarEmpleadoId/:idEmpleado',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.BuscarEmpleadoId);
 api.get('/buscarEmpleadoNombre/:nombreEmpleado',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.BuscarEmpleadoNombre);
+api.get('/buscarEmpleadoPuesto/:puesto',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.BuscarEmpleadoPuesto );
+api.get('/buscardepartamento/:departamento',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.BuscarEmpleadoDepartamento);
+api.delete('/eliminarEmpleados/:idEmpleado',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.eliminarEmpleados);
+api.get('/todosLosEmpleados',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.TodoslosEmpleados);
 
 
 
