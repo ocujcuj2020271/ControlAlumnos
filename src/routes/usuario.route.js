@@ -23,6 +23,7 @@ api.get('/buscarEmpleadoPuesto/:puesto',[md_autenticacion.Auth, md_roles.verEmpr
 api.get('/buscardepartamento/:departamento',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.BuscarEmpleadoDepartamento);
 api.delete('/eliminarEmpleados/:idEmpleado',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.eliminarEmpleados);
 api.get('/todosLosEmpleados',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.TodoslosEmpleados);
+api.get('/crearReporte',[md_autenticacion.Auth, md_roles.verEmpresas], controladorUsuario.pdf);
 
 
 

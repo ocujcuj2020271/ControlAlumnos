@@ -2,16 +2,22 @@ const Usuario = require('../models/usuario.models');
 const Empleados = require('../models/empleados.model');
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('../services/jwt');
+const PDF = require('pdfkit-construct');
+const fs = require('fs');
+
+const app = require('express')();
+
+var doc = new PDF();
+
 
 //----------------ADMIN---------------------
 
 function RegistrarAdmin(req, res) {
-    var parametros = req.body;
     var usuarioModel = new Usuario();
 
     Usuario.find({ rol: 'ROL_Admin' }, (err, usuarioEncontrado) => {
         if (usuarioEncontrado.length > 0) {
-            return res.status(500).send({ mensaje: "Ya existe un Administrador" })
+            return console.log({ mensaje: "Ya existe un Administrador" })
         } else {
 
             usuarioModel.nombre = 'Admin';
@@ -21,10 +27,10 @@ function RegistrarAdmin(req, res) {
                 usuarioModel.password = passwordEncriptada;
 
                 usuarioModel.save((err, usuarioGuardado) => {
-                    if (err) return res.status(500).send({ mensaje: 'Error en la peticion' });
-                    if (!usuarioGuardado) return res.status(500).send({ mensaje: 'Error al agregar el Usuario' });
+                    if (err) console.log({ mensaje: 'Error en la peticion' });
+                    if (!usuarioGuardado) return console.log({ mensaje: 'Error al agregar el Usuario' });
 
-                    return res.status(200).send({ usuario: usuarioGuardado });
+                    return console.log({ usuario: usuarioGuardado });
                 });
             });
         }
@@ -136,7 +142,7 @@ function agregarEmpleados(req, res) {
         });
 
     } else {
-        return res.status(404).send({ mensaje: 'Debe enviar los parametros obligatorios' });
+        return res.status(200).send({ mensaje: empleadoGuardado });
     }
 }
 
@@ -241,10 +247,10 @@ function BuscarEmpleadoDepartamento(req, res) {
 
 function eliminarEmpleados(req, res) {
     var idEmpleado = req.params.idEmpleado;
-    
+
 
     Empleados.findOne({ _id: idEmpleado, idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
-        
+
         if (!empresaEncontrada) {
             return res.status(400).send({ mensaje: 'No puedes eliminar Empleados de otra Empresa' });
         }
@@ -261,9 +267,9 @@ function eliminarEmpleados(req, res) {
 
 
 function TodoslosEmpleados(req, res) {
-    
 
-    Empleados.findOne({idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+
+    Empleados.findOne({ idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
 
 
         if (!empresaEncontrada) {
@@ -272,12 +278,84 @@ function TodoslosEmpleados(req, res) {
         Empleados.find({}, (err, empleadosEncontrados) => {
             if (err) return res.status(500).send({ mensaje: 'Error en la peticion' })
             if (!empleadosEncontrados) return res.status(500).send({ mensaje: 'Error al obtener usuario' })
-    
-            return res.status(200).send({ Empleados:  empleadosEncontrados })
+
+            return res.status(200).send({ Empleados: empleadosEncontrados })
         });
     }
     )
 
+}
+
+function pdf(req, res) {
+
+
+
+    Empleados.find({ idEmpresa: req.user.sub }, (err, empresaEncontrada) => {
+        doc.pipe(fs.createWriteStream('reportes/' + req.user.nombre + '.pdf'));
+
+        for (var i = 0; i < empresaEncontrada.length; i++) {
+
+
+            let date = new Date();
+            let output = String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + date.getFullYear();
+            
+
+            const empleados = [
+                {
+                    No: i,
+                    nombre: empresaEncontrada[i].nombre,
+                    apellido: empresaEncontrada[i].apellido,
+                    puesto: empresaEncontrada[i].puesto,
+                    departamento: empresaEncontrada[i].departamento
+                }
+                
+            ];
+
+            doc.setDocumentHeader({
+                height: '15'
+            }, () => {
+                doc.fontSize(20).text("Reporte de Empleados de " + req.user.nombre + ":", {
+                    with: 420,
+                    align: 'center',
+                });
+                doc.fontSize(12);
+                doc.text("Guatemala "+ output, {
+                    with: 420,
+                    align: 'right',
+                });
+            });
+
+            
+
+
+            doc.addTable(
+                [
+                    { key: 'No', label: 'No', align: 'left' },
+                    { key: 'nombre', label: 'Nombre', align: 'left' },
+                    { key: 'apellido', label: 'Apellido', align: 'left' },
+                    { key: 'puesto', label: 'Puesto', align: 'left' },
+                    { key: 'departamento', label: 'Departamento', align: 'right' }
+                ], empleados, {
+                border: null,
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#d6c4dd"],
+                cellsPadding: 10,
+                marginLeft: 45,
+                marginRight: 45,
+                headAlign: 'center'
+            });
+
+            
+
+        }
+
+
+
+        doc.render();
+        doc.end();
+    })
+    return res.status(200).send("PDF generado")
 }
 
 
@@ -295,6 +373,7 @@ module.exports = {
     BuscarEmpleadoNombre,
     BuscarEmpleadoPuesto,
     BuscarEmpleadoDepartamento,
-    eliminarEmpleados, 
-    TodoslosEmpleados
+    eliminarEmpleados,
+    TodoslosEmpleados,
+    pdf
 }
